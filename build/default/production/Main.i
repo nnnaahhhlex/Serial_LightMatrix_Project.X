@@ -2253,21 +2253,171 @@ extern __bank0 __bit __timeout;
 
 
 
+
+char UART_Buffer = 'w';
+char *pointer = &UART_Buffer;
+void UART_send_char(char bt);
+char UART_get_char(void);
+void flash_red(void);
+void initiate(void);
+void UART_send_string(char* st_pt);
+
+
+
 void main(void) {
 
-    TRISC = 0x00;
+    RCSTAbits.SPEN = 0;
+    initiate();
+    _delay((unsigned long)((1500)*(8000000/4000.0)));
 
-    OSCCON = 0b01110111;
+    PORTC = 0x00;
+    UART_send_string("Start Value: ");
+    UART_send_char(UART_Buffer);
+    UART_send_char('\r');
+
+    UART_send_string("Initialized");
+    UART_send_char('\r');
+
+    _delay((unsigned long)((250)*(8000000/4000.0)));
+    RCSTAbits.SPEN = 1;
+    _delay((unsigned long)((250)*(8000000/4000.0)));
 
     while(1){
 
-       PORTC = 0x00;
-       _delay((unsigned long)((500)*(8000000/4000.0)));
-       PORTC = 0x01;
+
+
+
+       UART_send_string("Begin loop");
+       UART_send_char('\r');
+       UART_send_string("Get char: ");
+       UART_send_char('\r');
+
        _delay((unsigned long)((1000)*(8000000/4000.0)));
 
-    }
+
+       UART_Buffer = UART_get_char();
+
+       UART_send_string("Buffer Value: ");
+       UART_send_char(UART_Buffer);
+       UART_send_char('\r');
+
+       if(UART_Buffer == 'a'){
+       PORTC = 0x01;
+
+       _delay((unsigned long)((2000)*(8000000/4000.0)));
+       PORTC = 0x00;
+       UART_send_char('a');
+       _delay((unsigned long)((1000)*(8000000/4000.0)));
+       }
+
+       else if(UART_Buffer == 'b'){
+       PORTC = 0x02;
+
+       _delay((unsigned long)((2000)*(8000000/4000.0)));
+       PORTC = 0x00;
+       UART_send_char('b');
+       _delay((unsigned long)((1000)*(8000000/4000.0)));
+       }
+
+       else if(UART_Buffer == 'c'){
+       PORTC = 0x03;
+
+       _delay((unsigned long)((2000)*(8000000/4000.0)));
+       PORTC = 0x00;
+       UART_send_char('c');
+       _delay((unsigned long)((1000)*(8000000/4000.0)));
+       }
+       else{
+       flash_red();
+       }
+# 101 "Main.c"
+}
+}
 
 
+void UART_send_char(char bt)
+{
+    while(!PIR1bits.TXIF);
+    TXREG = bt;
+}
 
+void UART_send_string(char* st_pt)
+{
+    while(*st_pt)
+        UART_send_char(*st_pt++);
+}
+
+
+char UART_get_char(void)
+{
+    char garbage;
+        if(RCSTAbits.OERR)
+        {
+            UART_send_string("Overrun Error");
+            UART_send_char('\r');
+
+            RCSTAbits.CREN = 0;
+            RCSTAbits.CREN = 1;
+        }
+
+   while(!PIR1bits.RCIF){
+        UART_send_string("In while loop");
+        UART_send_char('\r');
+
+        if(RCSTAbits.FERR)
+        {
+            UART_send_string("Framing Error");
+            UART_send_char('\r');
+            RCSTAbits.SREN = 0;
+            _delay((unsigned long)((2000)*(8000000/4000.0)));
+            RCSTAbits.SREN = 1;
+
+             UART_send_string("Reset");
+             UART_send_char('\r');
+             UART_send_char('\r');
+        }
+
+        if(BAUDCTLbits.RCIDL == 1){
+        UART_send_string("Idling");
+        UART_send_char('\r');
+        }
+
+  }
+
+    UART_send_string("Reading");
+    UART_send_char('\r');
+    _delay((unsigned long)((10)*(8000000/4000.0)));
+
+    return RCREG;
+}
+
+
+void flash_red(void){
+    PORTC = 0x01;
+    _delay((unsigned long)((500)*(8000000/4000.0)));
+    PORTC = 0x00;
+    _delay((unsigned long)((500)*(8000000/4000.0)));
+}
+
+
+void initiate(void){
+
+    TRISC = 0b11111100;
+    TRISB = 0b01110000;
+    OSCCON = 0b01110111;
+
+
+    TXSTA = 0b00100110;
+# 187 "Main.c"
+    RCSTA = 0b10110000;
+# 198 "Main.c"
+    BAUDCTL = 0b00000000;
+# 209 "Main.c"
+    SPBRG = 25;
+
+
+    INTCON = 0b11000000;
+# 223 "Main.c"
+    PIE1 = 0b00110000;
+# 234 "Main.c"
 }
