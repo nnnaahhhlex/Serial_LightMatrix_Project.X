@@ -118,7 +118,7 @@ void UART_send_string(char* st_pt)
 
 char UART_get_char(void)   
 {
-    char garbage;
+    char garbage = 0;
         if(RCSTAbits.OERR) // check for overrun Error 
         {
             UART_send_string("Overrun Error");
