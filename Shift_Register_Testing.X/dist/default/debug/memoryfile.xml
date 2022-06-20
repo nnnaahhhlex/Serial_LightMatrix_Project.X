@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <executable name="dist/default/debug\Shift_Register_Testing.X.debug.hex">
+    <memory name="program">
+      <units>words</units>
+      <length>4096</length>
+      <used>174</used>
+      <free>3922</free>
+    </memory>
+    <memory name="data">
+      <units>bytes</units>
+      <length>256</length>
+      <used>4</used>
+      <free>252</free>
+    </memory>
+  </executable>
+</project>

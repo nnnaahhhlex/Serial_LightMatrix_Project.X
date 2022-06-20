@@ -1,0 +1,14 @@
+OE Bar = Grounded (Low)
+SRCLR Bar = low -> clear shift register 
+
+SER = Data input. If SRCLK (Rising edge) is triggered, voltage level will be placed into the register (All bits will be shifted to the right)
+
+RCLK will latch the data stored in shift register and it will be outputed
+
+4 pins from MC needed and connected to shift register
+
+One pin for SRCLR Bar
+One pin for SER
+One pin for SRCLK
+One pin for RCLK
+
