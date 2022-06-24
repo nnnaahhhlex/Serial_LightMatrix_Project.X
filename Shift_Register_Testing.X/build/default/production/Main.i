@@ -15,8 +15,9 @@ void clear_shift_register(void);
 void input_high(void);
 void input_low(void);
 void initiate(void);
-
-
+void LED_select(unsigned char LED_on, unsigned char colour_select);
+void red_arrow(void);
+void green_arrow(void);
 
 
 # 1 "./config.h" 1
@@ -2254,7 +2255,7 @@ extern __bank0 __bit __powerdown;
 extern __bank0 __bit __timeout;
 # 28 "C:/Program Files/Microchip/MPLABX/v5.45/packs/Microchip/PIC16Fxxx_DFP/1.2.33/xc8\\pic\\include\\xc.h" 2 3
 # 23 "./config.h" 2
-# 27 "Main.c" 2
+# 28 "Main.c" 2
 
 
 
@@ -2263,12 +2264,10 @@ extern __bank0 __bit __timeout;
 void main(void) {
     initiate();
     while (1) {
-        for( int i = 0; i < 255 ; i++)
-        {
-
-        input_data(i);
-        _delay((unsigned long)((500)*(8000000/4000.0)));
-        }
+        red_arrow();
+        _delay((unsigned long)((2500)*(8000000/4000.0)));
+        green_arrow();
+        _delay((unsigned long)((2500)*(8000000/4000.0)));
 
     }
 }
@@ -2279,7 +2278,7 @@ void initiate(void) {
     TRISB = 0b01100000;
     OSCCON = 0b01110111;
     PORTCbits.RC6 = 0;
-# 109 "Main.c"
+# 108 "Main.c"
 }
 
 void clear_shift_register(void) {
@@ -2371,7 +2370,7 @@ void input_data(unsigned char num) {
     } else input_low();
 
 
-    latch_output();
+
 }
 
 void input_high(void) {
@@ -2392,18 +2391,85 @@ void input_low(void) {
 
 void serial_clock_pulse(void) {
     PORTCbits.RC6 = 0;
-    _delay((unsigned long)((100)*(8000000/4000.0)));
+    _delay((unsigned long)((5)*(8000000/4000000.0)));
     PORTCbits.RC6 = 1;
-    _delay((unsigned long)((100)*(8000000/4000.0)));
+    _delay((unsigned long)((5)*(8000000/4000000.0)));
     PORTCbits.RC6 = 0;
-    _delay((unsigned long)((100)*(8000000/4000.0)));
+    _delay((unsigned long)((5)*(8000000/4000000.0)));
 }
 
 void latch_output(void) {
     PORTCbits.RC4 = 0;
-    _delay((unsigned long)((5)*(8000000/4000.0)));
+    _delay((unsigned long)((5)*(8000000/4000000.0)));
     PORTCbits.RC4 = 1;
-    _delay((unsigned long)((500)*(8000000/4000.0)));
+
+    _delay((unsigned long)((5)*(8000000/4000000.0)));
     PORTCbits.RC4 = 0;
-    _delay((unsigned long)((5)*(8000000/4000.0)));
+    _delay((unsigned long)((5)*(8000000/4000000.0)));
+}
+# 253 "Main.c"
+void green_arrow(void) {
+    for (int i = 0; i < 8; i++) {
+        unsigned char row = 0b00000001;
+        unsigned char col = 0;
+
+        if (i != 0) {
+            row = (row << i);
+        }
+
+        input_data(row);
+
+        if (i == 7) {
+
+            col = 24;
+        } else if (i == 0 || i == 1 || i == 2 || i == 3 || i == 6) {
+
+            col = 60;
+        } else if (i == 5) {
+
+            col = 126;
+        } else {
+
+            col = 255;
+        }
+        input_data(col);
+        latch_output();
+
+    }
+
+
+}
+
+void red_arrow(void) {
+    for (int i = 0; i < 8; i++) {
+        unsigned char row = 0b10000000;
+        unsigned char col = 0;
+
+        if (i != 0) {
+            row = (row >> i);
+        }
+
+        input_data(row);
+
+
+        if (i == 7) {
+
+            col = 24;
+        } else if (i == 0 || i == 1 || i == 2 || i == 3 || i == 6) {
+
+            col = 60;
+        } else if (i == 5) {
+
+            col = 126;
+        } else {
+
+            col = 255;
+        }
+        input_data(col);
+        latch_output();
+
+    }
+
+
+
 }

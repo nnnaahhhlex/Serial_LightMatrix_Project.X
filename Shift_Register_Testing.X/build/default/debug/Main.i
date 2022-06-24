@@ -15,8 +15,9 @@ void clear_shift_register(void);
 void input_high(void);
 void input_low(void);
 void initiate(void);
-
-
+void LED_select(unsigned char LED_on, unsigned char colour_select);
+void red_arrow(void);
+void green_arrow(void);
 
 
 # 1 "./config.h" 1
@@ -2254,7 +2255,7 @@ extern __bank0 __bit __powerdown;
 extern __bank0 __bit __timeout;
 # 28 "C:/Program Files/Microchip/MPLABX/v5.45/packs/Microchip/PIC16Fxxx_DFP/1.2.33/xc8\\pic\\include\\xc.h" 2 3
 # 23 "./config.h" 2
-# 27 "Main.c" 2
+# 28 "Main.c" 2
 
 
 
@@ -2262,22 +2263,22 @@ extern __bank0 __bit __timeout;
 
 void main(void) {
     initiate();
+    while (1) {
+        red_arrow();
 
-    input_data(7);
-
+    }
 }
 
-
-void initiate(void){
+void initiate(void) {
 
     TRISC = 0b00001111;
-    TRISB = 0b01110000;
+    TRISB = 0b01100000;
     OSCCON = 0b01110111;
-# 104 "Main.c"
+    PORTCbits.RC6 = 0;
+# 105 "Main.c"
 }
 
-
-void clear_shift_register(void){
+void clear_shift_register(void) {
     PORTCbits.RC5 = 1;
     _delay((unsigned long)((5)*(8000000/4000.0)));
     PORTCbits.RC5 = 0;
@@ -2286,130 +2287,184 @@ void clear_shift_register(void){
     _delay((unsigned long)((5)*(8000000/4000.0)));
 }
 
-
-void input_data(unsigned char num){
-
+void input_data(unsigned char num) {
 
 
 
 
 
-        if((num & 0x01) == 0x01){
+
+    if ((num & 0x01) == 0x01) {
 
 
-            input_high();
+        input_high();
 
-            }
-        else input_low();
-
-
-
-        if((num & 0x02) == 0x02){
-
-
-            input_high();
-
-            }
-        else input_low();
+    } else input_low();
 
 
 
-        if((num & 0x04) == 0x04){
+    if ((num & 0x02) == 0x02) {
 
 
-            input_high();
+        input_high();
 
-            }
-        else input_low();
-
-
-
-        if((num & 0x08) == 0x08){
-
-
-            input_high();
-
-            }
-        else input_low();
+    } else input_low();
 
 
 
-        if((num & 0x10) == 0x10){
+    if ((num & 0x04) == 0x04) {
 
 
-            input_high();
+        input_high();
 
-            }
-        else input_low();
-
-
-
-        if((num & 0x20) == 0x20){
-
-
-            input_high();
-
-            }
-        else input_low();
+    } else input_low();
 
 
 
-        if((num & 0x40) == 0x40){
+    if ((num & 0x08) == 0x08) {
 
 
-            input_high();
+        input_high();
 
-            }
-        else input_low();
+    } else input_low();
+
+
+
+    if ((num & 0x10) == 0x10) {
+
+
+        input_high();
+
+    } else input_low();
+
+
+
+    if ((num & 0x20) == 0x20) {
+
+
+        input_high();
+
+    } else input_low();
+
+
+
+    if ((num & 0x40) == 0x40) {
+
+
+        input_high();
+
+    } else input_low();
 
 
 
 
 
-        if((num & 0x80) == 0x80){
+    if ((num & 0x80) == 0x80) {
 
 
-            input_high();
+        input_high();
 
-            }
-        else input_low();
+    } else input_low();
 
 
-    latch_output();
+
 }
 
-void input_high(void){
+void input_high(void) {
 
-    PORTCbits.RC7 = 1;
+    PORTBbits.RB4 = 1;
     serial_clock_pulse();
 
 
 }
 
+void input_low(void) {
 
-void input_low(void){
-
-    PORTCbits.RC7 = 0;
+    PORTBbits.RB4 = 0;
     serial_clock_pulse();
 
 
 }
 
-void serial_clock_pulse(void){
+void serial_clock_pulse(void) {
     PORTCbits.RC6 = 0;
-    _delay((unsigned long)((5)*(8000000/4000000.0)));
+
     PORTCbits.RC6 = 1;
-    _delay((unsigned long)((5)*(8000000/4000000.0)));
+
     PORTCbits.RC6 = 0;
-    _delay((unsigned long)((5)*(8000000/4000000.0)));
+
 }
 
+void latch_output(void) {
+    PORTCbits.RC4 = 0;
 
-void latch_output(void){
-    PORTCbits.RC4 = 0;
-    _delay((unsigned long)((5)*(8000000/4000000.0)));
     PORTCbits.RC4 = 1;
-    _delay((unsigned long)((5)*(8000000/4000000.0)));
+
     PORTCbits.RC4 = 0;
-    _delay((unsigned long)((5)*(8000000/4000000.0)));
+
+}
+# 249 "Main.c"
+void green_arrow(void) {
+    for (int i = 0; i < 8; i++) {
+        unsigned char row = 0b00000001;
+        unsigned char col = 0;
+
+        if (i != 0) {
+            row = (row << i);
+        }
+
+        input_data(row);
+
+        if (i == 7) {
+
+            col = 24;
+        } else if (i == 0 || i == 1 || i == 2 || i == 3 || i == 6) {
+
+            col = 60;
+        } else if (i == 5) {
+
+            col = 126;
+        } else {
+
+            col = 255;
+        }
+        input_data(col);
+        latch_output();
+
+    }
+
+
+}
+
+void red_arrow(void) {
+    for (int i = 7; i >=0; i--) {
+        unsigned char row = 0b10000000;
+        unsigned char col = 0;
+
+        if (i != 7) {
+            row = (row >> i);
+        }
+
+        input_data(row);
+
+
+        if (i == 7) {
+
+            col = 24;
+        } else if (i == 0 || i == 1 || i == 2 || i == 3 || i == 6) {
+
+            col = 60;
+        } else if (i == 5) {
+
+            col = 126;
+        } else {
+
+            col = 255;
+        }
+        input_data(col);
+        latch_output();
+    }
+
+
+
 }

@@ -21,8 +21,9 @@ void clear_shift_register(void);
 void input_high(void);
 void input_low(void);
 void initiate(void);
-
-
+void LED_select(unsigned char LED_on, unsigned char colour_select); //Plug in the number with appropriate on/off leds
+void red_arrow(void);
+void green_arrow(void);
 
 #include "config.h"
 #include "pic.h"
@@ -32,20 +33,15 @@ void initiate(void);
 void main(void) {
     initiate();
     while (1) {
-        for( int i = 0; i < 255 ; i++)
-        {
-             
-        input_data(i);
-        __delay_ms(500);
-        }
-        
+        red_arrow();
+
     }
 }
 
 void initiate(void) {
 
     TRISC = 0b00001111; // Setting all PORTC pins to inputs besides pin RC4,RC5,RC6,RC7
-    TRISB = 0b01100000; // PortB has 4 pins. We make pin RB7 (TX) an output and RB5 (RX) an input
+    TRISB = 0b01100000; // PortB has 4 pins. We make pin RB7 (TX) an output and RB5 (RX) an input. Set RB4 as an output
     OSCCON = 0b01110111; // Setting the internal oscillator clock to the factory frequency of 8 MHz
     SHIFT_CLOCK = 0;
     //    //Setting up serial COM registers
@@ -197,7 +193,7 @@ void input_data(unsigned char num) {
     } else input_low();
 
 
-    latch_output();
+    //latch_output();
 }
 
 void input_high(void) {
@@ -218,18 +214,101 @@ void input_low(void) {
 
 void serial_clock_pulse(void) {
     SHIFT_CLOCK = 0;
-    __delay_ms(100);
+    __delay_us(5);
     SHIFT_CLOCK = 1; //SRCLK = RC2 --> Creating positive edge (HIGH) OR
-    __delay_ms(100);
+    __delay_us(5);
     SHIFT_CLOCK = 0; //AND
-    __delay_ms(100);
+    __delay_us(5);
 }
 
 void latch_output(void) {
     LATCH_OUTPUT = 0;
-    __delay_ms(5);
+    __delay_us(5);
     LATCH_OUTPUT = 1; //RCLK = RCO --> Creating positive edge (HIGH) OR
-    __delay_ms(500);
+    //__delay_ms(500);
+    __delay_us(5);
     LATCH_OUTPUT = 0; //AND
-    __delay_ms(5);
+    __delay_us(5);
+}
+
+//void animation(void) {
+//
+//    for (int animation_step = 0; animation_step < 8; animation_step++) { // in order to create an animation, I can replay each row as time goes on. So if we have a up arrow, the animation can be the bottom row moving towards the top row (from 0->7)
+//
+//    }
+//}
+//
+//void LED_select(unsigned char LED_on, unsigned char colour_select, unsigned char animation_step) {
+//
+//} //Plug in the number with appropriate on/off leds
+
+
+//If I have data input --> Green shift register --> Red shift register --> Cathode shift register
+
+// 3 scenarios 1. Green arrow 2. Red arrow 3. No change scenario
+
+void green_arrow(void) {
+    for (int i = 0; i < 8; i++) {
+        unsigned char row = 0b00000001;
+        unsigned char col = 0;
+
+        if (i != 0) {
+            row = (row << i);
+        }
+
+        input_data(row); // loading the cathode register-
+
+        if (i == 7) {
+
+            col = 24; //00011000
+        } else if (i == 0 || i == 1 || i == 2 || i == 3 || i == 6) {
+
+            col = 60; //00111100
+        } else if (i == 5) {
+
+            col = 126; //01111110
+        } else {
+
+            col = 255; //11111111
+        }
+        input_data(col);
+        latch_output();
+        //__delay_ms(250);
+    }
+
+
+}
+
+void red_arrow(void) {
+    for (int i = 0; i < 8; i++) {
+        unsigned char row = 0b10000000;
+        unsigned char col = 0;
+
+        if (i != 0) {
+            row = (row >> i);
+        }
+
+        input_data(row); // loading the cathode register
+
+
+        if (i == 7) {
+
+            col = 24; //00011000
+        } else if (i == 0 || i == 1 || i == 2 || i == 3 || i == 6) {
+
+            col = 60; //00111100
+        } else if (i == 5) {
+
+            col = 126; //01111110
+        } else {
+
+            col = 255; //11111111
+        }
+        input_data(col);
+        latch_output();
+        //__delay_ms(250);
+    }
+
+
+
 }
